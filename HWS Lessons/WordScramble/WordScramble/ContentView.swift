@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showError = false
     
+    @State private var score : Int = 0
+    
     var body: some View {
         NavigationStack{
             List{
@@ -36,6 +38,9 @@ struct ContentView: View {
                         }
                     }
                 }
+                Section{
+                    Text("Your Score Is : \(score)")
+                }
             }
             .onAppear(perform: startGame)
             .navigationTitle(startWord)
@@ -43,8 +48,11 @@ struct ContentView: View {
             .alert(errorTitle, isPresented: $showError) { } message: {
                 Text(errorMessage)
             }
-
+            .toolbar {
+                Button("New Word", action: newWord)
+            }
         }
+
     }
     
     // FUNC 1
@@ -68,8 +76,13 @@ struct ContentView: View {
             return
         }
         
+        guard minLength(word: theWord) else {
+            wordError(title: "Stop!", message: "You have to write more than 3 characters.")
+            return
+        }
         withAnimation {
             wholeWords.insert(theWord, at: 0)
+            calcScore(word: theWord)
         }
         guessWord = ""
     }
@@ -85,6 +98,15 @@ struct ContentView: View {
             }
         }
         fatalError("The 'start.txt' file couldn't find")
+    }
+    
+    func newWord(){
+        score = 0
+        guessWord = ""
+        withAnimation {
+            wholeWords.removeAll()
+        }
+        startGame()
     }
     
     // FUNC 3
@@ -126,6 +148,13 @@ struct ContentView: View {
         errorMessage = message
         showError = true
     }
+    
+    // FUNC 7
+    func minLength(word: String) -> Bool {
+        !(word.count <= 3)
+    }
+    
+    func calcScore(word: String){ score += word.count }
 }
 
 #Preview {
