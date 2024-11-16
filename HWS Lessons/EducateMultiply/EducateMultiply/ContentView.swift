@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct GetResultPage : View{
-    let id = UUID()
     var firstNum : Int
     var secondNums : [Int]
     var results : [Int]
@@ -41,7 +40,10 @@ struct ContentView: View {
     @State private var nextQuestionIndex = 0
     @State private var startTraining = false
     @State private var getResults = false
-
+    @State private var showAlert = false
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
+    
     var body: some View {
         NavigationStack{
             List{
@@ -71,20 +73,37 @@ struct ContentView: View {
                                 HStack{
                                     Text("\(selectedNum) x \(askingNumbers[nextQuestionIndex]) =")
                                     TextField("Enter", value: $answerNum, format: .number)
+                                        .keyboardType(.asciiCapableNumberPad)
                                         .textFieldStyle(.roundedBorder)
                                 }
                                 Button((askingNumbers.endIndex == nextQuestionIndex + 1) ? "Get Results" : "Next"){
                                     nextQuestion()
                                 }
-                            }
+                            }.transition(.slide)
                     }
                 }
-            }.navigationTitle("Multiply Me! ")
+            }.navigationTitle("Multiply Me! ").navigationBarTitleDisplayMode(.inline)
                 .scrollContentBackground(.hidden)
                 .background(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
+        }.alert(alertTitle,
+                isPresented: $showAlert){
+            Button("OK"){ }
+        } message: {
+            Text(alertMessage)
         }
         .onChange(of: startTraining) { startTraining == false ? askingNumbers.removeAll() : nil }
-        .sheet(isPresented: $getResults, onDismiss: endGame, content: {
+        .onChange(of: selectedNum,{
+            endGame()
+        })
+        .onChange(of: selectedDiffuculty, {
+            endGame()
+        })
+        .onSubmit() {
+            nextQuestion()
+        }
+        .sheet(isPresented: $getResults,
+               onDismiss: endGame,
+               content: {
             GetResultPage(firstNum: selectedNum, secondNums: askingNumbers, results: answerNumArr)
         })
     }
@@ -96,13 +115,16 @@ struct ContentView: View {
                 let randomNumber = Int.random(in: 2...12)
                 askingNumbers.insert(randomNumber, at: 0)
             }
-            
         }else {
             endGame()
         }
     }
     
     func nextQuestion(){
+        guard (answerNum != nil) else {
+            theAlert(title: "Enter A Num", message: "Please Enter A Value")
+            return
+        }
         answerNumArr.append(answerNum ?? 0)
         if nextQuestionIndex >= askingNumbers.count - 1{
             getResults = true
@@ -120,6 +142,11 @@ struct ContentView: View {
         startTraining = false
     }
 
+    func theAlert(title: String, message: String){
+        showAlert = true
+        alertTitle = title
+        alertMessage = message
+    }
 }
 #Preview {
     ContentView()
