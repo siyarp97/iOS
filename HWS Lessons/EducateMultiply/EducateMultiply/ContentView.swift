@@ -85,6 +85,8 @@ struct ContentView: View {
             }.navigationTitle("Multiply Me! ").navigationBarTitleDisplayMode(.inline)
                 .scrollContentBackground(.hidden)
                 .background(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .clipShape(Circle())
+            Spacer()
         }.alert(alertTitle,
                 isPresented: $showAlert){
             Button("OK"){ }
